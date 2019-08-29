@@ -17,7 +17,12 @@
 package org.gradle.api.tasks
 
 import org.gradle.integtests.fixtures.AbstractIntegrationSpec
+import org.gradle.process.internal.util.LongCommandLineDetectionUtil
 import org.gradle.test.fixtures.file.TestFile
+import org.gradle.util.Requires
+import org.gradle.util.TestPrecondition
+import org.hamcrest.core.IsNot
+import org.hamcrest.core.StringEndsWith
 import spock.lang.Issue
 
 class JavaExecIntegrationTest extends AbstractIntegrationSpec {
@@ -229,6 +234,45 @@ class JavaExecIntegrationTest extends AbstractIntegrationSpec {
         then:
         executedAndNotSkipped ":run"
         outputFile.text == "different"
+    }
+
+    @Requires(TestPrecondition.NOT_WINDOWS)
+    def "does not suggest long command line failures when execution fails on non-Windows system"() {
+        buildFile << """
+            run.classpath += project.files('${'a'.repeat(LongCommandLineDetectionUtil.ARG_MAX_WINDOWS)}')
+            run.executable 'some-java'
+        """
+
+        when:
+        def failure = fails("run")
+
+        then:
+        failure.assertThatCause(IsNot.not(StringEndsWith.endsWith("Gradle detected the command line may be too long which could be causing the failures.")))
+    }
+
+    @Requires(TestPrecondition.WINDOWS)
+    def "can suggest long command line failures when execution fails for long command line"() {
+        buildFile << """
+            run.classpath += project.files('${'a'.repeat(LongCommandLineDetectionUtil.ARG_MAX_WINDOWS)}')
+        """
+
+        when:
+        def failure = fails("run")
+
+        then:
+        failure.assertThatCause(StringEndsWith.endsWith("Gradle detected the command line may be too long which could be causing the failures."))
+    }
+
+    def "does not suggest long command line failures when execution fails for short command line"() {
+        buildFile << """
+            run.executable 'some-java'
+        """
+
+        when:
+        def failure = fails("run")
+
+        then:
+        failure.assertThatCause(IsNot.not(StringEndsWith.endsWith("Gradle detected the command line may be too long which could be causing the failures.")))
     }
 
     private void assertOutputFileIs(String text) {

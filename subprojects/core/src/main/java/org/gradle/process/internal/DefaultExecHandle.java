@@ -40,6 +40,7 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 import static java.lang.String.format;
+import static org.gradle.process.internal.util.LongCommandLineDetectionUtil.hasCommandLineExceedMaxLength;
 
 /**
  * Default implementation for the ExecHandle interface.
@@ -239,9 +240,14 @@ public class DefaultExecHandle implements ExecHandle, ProcessSettings {
     }
 
     private String failureMessageFor(ExecHandleState currentState) {
-        return currentState == ExecHandleState.STARTING
-            ? format("A problem occurred starting process '%s'", displayName)
-            : format("A problem occurred waiting for process '%s' to complete.", displayName);
+        if (currentState == ExecHandleState.STARTING) {
+            String result = format("A problem occurred starting process '%s'.", displayName);
+            if (hasCommandLineExceedMaxLength(command, arguments)) {
+                result += "\nGradle detected the command line may be too long which could be causing the failures.";
+            }
+            return result;
+        }
+        return format("A problem occurred waiting for process '%s' to complete.", displayName);
     }
 
     @Override
