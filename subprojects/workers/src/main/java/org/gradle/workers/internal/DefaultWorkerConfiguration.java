@@ -41,7 +41,7 @@ public class DefaultWorkerConfiguration extends DefaultActionConfiguration imple
     private List<File> classpath = Lists.newArrayList();
 
     public DefaultWorkerConfiguration(JavaForkOptionsFactory forkOptionsFactory) {
-        this.forkOptions = forkOptionsFactory.newJavaForkOptions();
+        this.forkOptions = forkOptionsFactory.newDecoratedJavaForkOptions();
     }
 
     @Override

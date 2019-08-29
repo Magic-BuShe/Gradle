@@ -140,10 +140,15 @@ class DefaultWorkerExecutorParallelTest extends ConcurrentSpec {
         }
 
         @Override
-        JavaForkOptionsInternal newJavaForkOptions() {
-            def forkOptions = delegate.newJavaForkOptions()
+        JavaForkOptionsInternal newDecoratedJavaForkOptions() {
+            def forkOptions = delegate.newDecoratedJavaForkOptions()
             forkOptions.setWorkingDir(temporaryFolder.root)
             return forkOptions
+        }
+
+        @Override
+        JavaForkOptionsInternal newJavaForkOptions() {
+            return newDecoratedJavaForkOptions()
         }
 
         @Override

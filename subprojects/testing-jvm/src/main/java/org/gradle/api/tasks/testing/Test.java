@@ -152,7 +152,7 @@ public class Test extends AbstractTestTask implements JavaForkOptions, PatternFi
 
     public Test() {
         patternSet = getFileResolver().getPatternSetFactory().create();
-        forkOptions = getForkOptionsFactory().newJavaForkOptions();
+        forkOptions = getForkOptionsFactory().newDecoratedJavaForkOptions();
         forkOptions.setEnableAssertions(true);
     }
 
@@ -574,7 +574,7 @@ public class Test extends AbstractTestTask implements JavaForkOptions, PatternFi
      */
     @Override
     protected JvmTestExecutionSpec createTestExecutionSpec() {
-        JavaForkOptions javaForkOptions = getForkOptionsFactory().newJavaForkOptions();
+        JavaForkOptions javaForkOptions = getForkOptionsFactory().newDecoratedJavaForkOptions();
         copyTo(javaForkOptions);
         return new JvmTestExecutionSpec(getTestFramework(), getClasspath(), getCandidateClassFiles(), isScanForTestClasses(), getTestClassesDirs(), getPath(), getIdentityPath(), getForkEvery(), javaForkOptions, getMaxParallelForks(), getPreviousFailedTestClasses());
     }
